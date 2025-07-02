@@ -104,6 +104,7 @@ app.post('/maintenance_requests/delete', (req, res) => {
 
 // Login endpoint
 app.post('/login', (req, res) => {
+    console.log("Login attempt:", req.body);
   const { username, password } = req.body;
   const users = JSON.parse(fs.readFileSync('./workerUsers.json', 'utf8'));
   const user = users.find(u => u.username === username && u.password === password);
