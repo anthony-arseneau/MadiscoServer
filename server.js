@@ -11,7 +11,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} from ${req.ip}`);
+  //console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} from ${req.ip}`);
   next();
 });
 
