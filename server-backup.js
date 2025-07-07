@@ -10,11 +10,6 @@ const COMPLETED_DB_FILE = './completed_maintenance_requests.json';
 app.use(cors());
 app.use(bodyParser.json());
 
-app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} from ${req.ip}`);
-  next();
-});
-
 // Helper to read/write JSON file
 function readDB() {
   if (!fs.existsSync(DB_FILE)) return [];
@@ -47,7 +42,6 @@ function readCompletedDB() {
 function writeCompletedDB(data) {
   fs.writeFileSync(COMPLETED_DB_FILE, JSON.stringify(data, null, 2));
 }
-
 
 // Get all todo items
 app.get('/maintenance_requests', (req, res) => {
@@ -98,7 +92,6 @@ app.post('/maintenance_requests/update', (req, res) => {
   }
 });
 
-
 // Delete items by id
 app.post('/maintenance_requests/delete', (req, res) => {
   const { ids } = req.body;
@@ -120,10 +113,6 @@ app.post('/login', (req, res) => {
   } else {
     res.status(401).json({ success: false, message: "Invalid credentials" });
   }
-});
-
-app.get("/", (req, res) => {
-  res.send("Server is running!");
 });
 
 app.listen(PORT, '0.0.0.0', () => {
