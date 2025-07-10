@@ -11,11 +11,10 @@ app.use(cors());
 app.use(bodyParser.json());
 
 app.use((req, res, next) => {
-  //console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} from ${req.ip}`);
   next();
 });
 
-// Helper to read/write JSON file
+// Helpers
 function readDB() {
   if (!fs.existsSync(DB_FILE)) return [];
   try {
@@ -23,7 +22,6 @@ function readDB() {
     if (!data.trim()) return [];
     return JSON.parse(data);
   } catch (e) {
-    // If JSON is invalid, reset file and return empty array
     fs.writeFileSync(DB_FILE, '[]');
     return [];
   }
@@ -32,7 +30,6 @@ function writeDB(data) {
   fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
 }
 
-// Helper for completed DB
 function readCompletedDB() {
   if (!fs.existsSync(COMPLETED_DB_FILE)) return [];
   try {
@@ -48,13 +45,19 @@ function writeCompletedDB(data) {
   fs.writeFileSync(COMPLETED_DB_FILE, JSON.stringify(data, null, 2));
 }
 
+// ===== ROUTES =====
 
-// Get all todo items
+// Get all To Do items
 app.get('/maintenance_requests', (req, res) => {
   res.json(readDB());
 });
 
-// Add a new todo item
+// Get all Done items
+app.get('/maintenance_requests/completed', (req, res) => {
+  res.json(readCompletedDB());
+});
+
+// Add new To Do item
 app.post('/maintenance_requests', (req, res) => {
   const items = readDB();
   items.push(req.body);
@@ -62,29 +65,25 @@ app.post('/maintenance_requests', (req, res) => {
   res.status(201).json({ success: true });
 });
 
-// Replace all todo items (for sync)
+// Replace all To Do items
 app.put('/maintenance_requests', (req, res) => {
   writeDB(req.body);
   res.status(200).json({ success: true });
 });
 
-// Complete items by id (move to completed DB)
+// Complete To Do items
 app.post('/maintenance_requests/complete', (req, res) => {
-  const { ids } = req.body; // array of ids
+  const { ids } = req.body;
   let items = readDB();
   let completed = readCompletedDB();
-
-  // Find items to complete
   const toComplete = items.filter(item => ids.includes(item.id));
-  // Remove completed items from main list
   items = items.filter(item => !ids.includes(item.id));
-  // Add to completed DB
   writeDB(items);
   writeCompletedDB([...completed, ...toComplete]);
   res.json({ success: true });
 });
 
-// Update a todo item by index
+// Update To Do item by ID
 app.post('/maintenance_requests/update', (req, res) => {
   const { id, updatedItem } = req.body;
   let items = readDB();
@@ -98,20 +97,26 @@ app.post('/maintenance_requests/update', (req, res) => {
   }
 });
 
-
-// Delete items by id
+// Delete To Do items
 app.post('/maintenance_requests/delete', (req, res) => {
   const { ids } = req.body;
   let items = readDB();
-  // Remove items whose id is in the ids array
   items = items.filter(item => !ids.includes(item.id));
   writeDB(items);
   res.json({ success: true });
 });
 
-// Login endpoint
+// Delete Done items
+app.post('/maintenance_requests/completed/delete', (req, res) => {
+  const { ids } = req.body;
+  let completed = readCompletedDB();
+  completed = completed.filter(item => !ids.includes(item.id));
+  writeCompletedDB(completed);
+  res.json({ success: true });
+});
+
+// Login
 app.post('/login', (req, res) => {
-    console.log("Login attempt:", req.body);
   const { username, password } = req.body;
   const users = JSON.parse(fs.readFileSync('./workerUsers.json', 'utf8'));
   const user = users.find(u => u.username === username && u.password === password);
@@ -122,6 +127,7 @@ app.post('/login', (req, res) => {
   }
 });
 
+// Root
 app.get("/", (req, res) => {
   res.send("Server is running!");
 });
