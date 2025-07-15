@@ -143,7 +143,7 @@ app.post('/login', (req, res) => {
   const users = JSON.parse(fs.readFileSync('./workerUsers.json', 'utf8'));
   const user = users.find(u => u.username === username && u.password === password);
   if (user) {
-    res.json({ success: true, name: user.name, position: user.position });
+    res.json({ success: true, name: user.name, role: user.role });
   } else {
     res.status(401).json({ success: false, message: "Invalid credentials" });
   }
