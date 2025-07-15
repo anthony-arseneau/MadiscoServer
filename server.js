@@ -6,6 +6,8 @@ const app = express();
 const PORT = 4000;
 const DB_FILE = './maintenance_requests.json';
 const COMPLETED_DB_FILE = './completed_maintenance_requests.json';
+const WORKERS_FILE = './workerUsers.json';
+const CITIES_FILE = './cities.json';
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -112,6 +114,26 @@ app.post('/maintenance_requests/completed/delete', (req, res) => {
   let completed = readCompletedDB();
   completed = completed.filter(item => !ids.includes(item.id));
   writeCompletedDB(completed);
+  res.json({ success: true });
+});
+
+// Get workers
+app.get('/workerUsers', (req, res) => {
+  res.json(JSON.parse(fs.readFileSync(WORKERS_FILE, 'utf8')));
+});
+// Save workers
+app.post('/workerUsers', (req, res) => {
+  fs.writeFileSync(WORKERS_FILE, JSON.stringify(req.body, null, 2));
+  res.json({ success: true });
+});
+
+// Get cities
+app.get('/cities', (req, res) => {
+  res.json(JSON.parse(fs.readFileSync(CITIES_FILE, 'utf8')));
+});
+// Save cities
+app.post('/cities', (req, res) => {
+  fs.writeFileSync(CITIES_FILE, JSON.stringify(req.body, null, 2));
   res.json({ success: true });
 });
 
