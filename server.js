@@ -149,6 +149,36 @@ app.post('/login', (req, res) => {
   }
 });
 
+// Manage section for administrator
+// Delete Worker
+app.post('/workerUsers/delete', (req, res) => {
+  const { username } = req.body;
+  const workers = JSON.parse(fs.readFileSync('workerUsers.json'));
+  const updated = workers.filter(w => w.username !== username);
+  fs.writeFileSync('workerUsers.json', JSON.stringify(updated, null, 2));
+  res.json({ success: true });
+});
+
+app.post('/cities/delete', (req, res) => {
+  const { cityName } = req.body;
+  const cities = JSON.parse(fs.readFileSync('cities.json'));
+  const updated = cities.filter(c => c.name !== cityName);
+  fs.writeFileSync('cities.json', JSON.stringify(updated, null, 2));
+  res.json({ success: true });
+});
+
+app.post('/cities/deleteStreet', (req, res) => {
+  const { cityName, streetName } = req.body;
+  const cities = JSON.parse(fs.readFileSync('cities.json'));
+  const updated = cities.map(c =>
+    c.name === cityName
+      ? { ...c, streets: c.streets.filter(s => s !== streetName) }
+      : c
+  );
+  fs.writeFileSync('cities.json', JSON.stringify(updated, null, 2));
+  res.json({ success: true });
+});
+
 // Root
 app.get("/", (req, res) => {
   res.send("Server is running!");
