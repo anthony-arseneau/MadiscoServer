@@ -13,35 +13,39 @@ app.use((req, res, next) => {
   next();
 });
 
-// Helpers
-function readDB() {
-  if (!fs.existsSync(DB_FILE)) return [];
+// Institution-aware helpers
+function readDB(institutionId) {
+  const file = getInstitutionFile(institutionId, 'maintenance_requests.json');
+  if (!fs.existsSync(file)) return [];
   try {
-    const data = fs.readFileSync(DB_FILE, 'utf8');
+    const data = fs.readFileSync(file, 'utf8');
     if (!data.trim()) return [];
     return JSON.parse(data);
   } catch (e) {
-    fs.writeFileSync(DB_FILE, '[]');
+    fs.writeFileSync(file, '[]');
     return [];
   }
 }
-function writeDB(data) {
-  fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+function writeDB(institutionId, data) {
+  const file = getInstitutionFile(institutionId, 'maintenance_requests.json');
+  fs.writeFileSync(file, JSON.stringify(data, null, 2));
 }
 
-function readCompletedDB() {
-  if (!fs.existsSync(COMPLETED_DB_FILE)) return [];
+function readCompletedDB(institutionId) {
+  const file = getInstitutionFile(institutionId, 'completed_maintenance_requests.json');
+  if (!fs.existsSync(file)) return [];
   try {
-    const data = fs.readFileSync(COMPLETED_DB_FILE, 'utf8');
+    const data = fs.readFileSync(file, 'utf8');
     if (!data.trim()) return [];
     return JSON.parse(data);
   } catch (e) {
-    fs.writeFileSync(COMPLETED_DB_FILE, '[]');
+    fs.writeFileSync(file, '[]');
     return [];
   }
 }
-function writeCompletedDB(data) {
-  fs.writeFileSync(COMPLETED_DB_FILE, JSON.stringify(data, null, 2));
+function writeCompletedDB(institutionId, data) {
+  const file = getInstitutionFile(institutionId, 'completed_maintenance_requests.json');
+  fs.writeFileSync(file, JSON.stringify(data, null, 2));
 }
 
 // Helper to get file path for an institution
