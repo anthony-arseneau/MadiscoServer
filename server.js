@@ -56,13 +56,13 @@ function getInstitutionFile(institutionId, file) {
 // ===== ROUTES =====
 
 // Get all To Do items
-app.get('/maintenance_requests', (req, res) => {
-  res.json(readDB());
+app.get('/:institutionId/maintenance_requests', (req, res) => {
+  res.json(readDB(req.params.institutionId));
 });
 
 // Get all Done items
-app.get('/maintenance_requests/completed', (req, res) => {
-  res.json(readCompletedDB());
+app.get('/:institutionId/maintenance_requests/completed', (req, res) => {
+  res.json(readCompletedDB(req.params.institutionId));
 });
 
 // Add new To Do item
