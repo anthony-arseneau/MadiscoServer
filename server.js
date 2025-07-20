@@ -15,6 +15,7 @@ app.use((req, res, next) => {
 
 // Institution-aware helpers
 function readDB(institutionId) {
+  console.log('request to see maintenance requests from' + institutionId);
   const file = getInstitutionFile(institutionId, 'maintenance_requests.json');
   if (!fs.existsSync(file)) return [];
   try {
@@ -55,34 +56,56 @@ function getInstitutionFile(institutionId, file) {
 
 // ===== ROUTES =====
 
-// Get all Done items
-app.get('/:institutionId/maintenance_requests/completed', (req, res) => {
-  res.json(readCompletedDB(req.params.institutionId));
+// Get all To Do items for an institution
+app.get('/institutions/:institutionId/maintenance_requests', (req, res) => {
+  const file = getInstitutionFile(req.params.institutionId, 'maintenance_requests.json');
+  if (!fs.existsSync(file)) return res.json([]);
+  const data = fs.readFileSync(file, 'utf8');
+  res.json(data.trim() ? JSON.parse(data) : []);
 });
 
-// Add new To Do item
-app.post('/maintenance_requests', (req, res) => {
-  const items = readDB();
+// Add a To Do item for an institution
+app.post('/institutions/:institutionId/maintenance_requests', (req, res) => {
+  const file = getInstitutionFile(req.params.institutionId, 'maintenance_requests.json');
+  let items = [];
+  if (fs.existsSync(file)) {
+    const data = fs.readFileSync(file, 'utf8');
+    items = data.trim() ? JSON.parse(data) : [];
+  }
   items.push(req.body);
-  writeDB(items);
+  fs.writeFileSync(file, JSON.stringify(items, null, 2));
   res.status(201).json({ success: true });
 });
 
-// Replace all To Do items
-app.put('/maintenance_requests', (req, res) => {
-  writeDB(req.body);
-  res.status(200).json({ success: true });
+// Get all Done items for an institution
+app.get('/institutions/:institutionId/completed_maintenance_requests', (req, res) => {
+  const file = getInstitutionFile(req.params.institutionId, 'completed_maintenance_requests.json');
+  if (!fs.existsSync(file)) return res.json([]);
+  const data = fs.readFileSync(file, 'utf8');
+  res.json(data.trim() ? JSON.parse(data) : []);
 });
 
-// Complete To Do items
-app.post('/maintenance_requests/complete', (req, res) => {
+
+// Replace all To Do items
+// app.put('/maintenance_requests', (req, res) => {
+//   writeDB(req.body);
+//   res.status(200).json({ success: true });
+// });
+
+// Complete To Do items for an institution
+app.post('/institutions/:institutionId/maintenance_requests/complete', (req, res) => {
   const { ids } = req.body;
-  let items = readDB();
-  let completed = readCompletedDB();
+  const institutionId = req.params.institutionId;
+
+  let items = readDB(institutionId);
+  let completed = readCompletedDB(institutionId);
+
   const toComplete = items.filter(item => ids.includes(item.id));
   items = items.filter(item => !ids.includes(item.id));
-  writeDB(items);
-  writeCompletedDB([...completed, ...toComplete]);
+
+  writeDB(institutionId, items);
+  writeCompletedDB(institutionId, [...completed, ...toComplete]);
+
   res.json({ success: true });
 });
 
@@ -204,30 +227,6 @@ app.post('/cities/deleteStreet', (req, res) => {
   fs.writeFileSync('cities.json', JSON.stringify(updated, null, 2));
   res.json({ success: true });
 });
-
-// Example: Get all To Do items for an institution
-app.get('/institutions/:institutionId/maintenance_requests', (req, res) => {
-  console.log('this call');
-  const file = getInstitutionFile(req.params.institutionId, 'maintenance_requests.json');
-  if (!fs.existsSync(file)) return res.json([]);
-  const data = fs.readFileSync(file, 'utf8');
-  res.json(data.trim() ? JSON.parse(data) : []);
-});
-
-// Example: Add a To Do item for an institution
-app.post('/institutions/:institutionId/maintenance_requests', (req, res) => {
-  const file = getInstitutionFile(req.params.institutionId, 'maintenance_requests.json');
-  let items = [];
-  if (fs.existsSync(file)) {
-    const data = fs.readFileSync(file, 'utf8');
-    items = data.trim() ? JSON.parse(data) : [];
-  }
-  items.push(req.body);
-  fs.writeFileSync(file, JSON.stringify(items, null, 2));
-  res.status(201).json({ success: true });
-});
-
-// Repeat similar logic for workers, cities, completed_maintenance_requests, etc.
 
 // Root
 app.get("/", (req, res) => {
