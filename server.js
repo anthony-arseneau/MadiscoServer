@@ -3,7 +3,7 @@ const fs = require('fs');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const app = express();
-const PORT = 4000;
+const PORT = 8080;
 const DB_FILE = './maintenance_requests.json';
 const COMPLETED_DB_FILE = './completed_maintenance_requests.json';
 const WORKERS_FILE = './workerUsers.json';
@@ -157,7 +157,6 @@ app.post('/workerUsers/delete', (req, res) => {
   const updated = workers.filter(w => w.username !== username);
   fs.writeFileSync('workerUsers.json', JSON.stringify(updated, null, 2));
   res.json({ success: true });
-  console.log("test")
 });
 
 app.post('/cities/delete', (req, res) => {
