@@ -93,7 +93,7 @@ app.get('/institutions/:institutionId/completed_maintenance_requests', (req, res
 // });
 
 // Complete To Do items for an institution
-app.post('/institutions/:institutionId/maintenance_requests/complete', (req, res) => {
+app.post('/institutions/:institutionId/complete', (req, res) => {
   const { ids } = req.body;
   const institutionId = req.params.institutionId;
 
