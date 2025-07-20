@@ -2,6 +2,7 @@ const express = require('express');
 const fs = require('fs');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const path = require('path');
 const app = express();
 const PORT = 8080;
 const DB_FILE = './maintenance_requests.json';
@@ -45,6 +46,11 @@ function readCompletedDB() {
 }
 function writeCompletedDB(data) {
   fs.writeFileSync(COMPLETED_DB_FILE, JSON.stringify(data, null, 2));
+}
+
+// Helper to get file path for an institution
+function getInstitutionFile(institutionId, file) {
+  return path.join(__dirname, 'data', institutionId, file);
 }
 
 // ===== ROUTES =====
@@ -140,10 +146,31 @@ app.post('/cities', (req, res) => {
 // Login
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
-  const users = JSON.parse(fs.readFileSync('./workerUsers.json', 'utf8'));
-  const user = users.find(u => u.username === username && u.password === password);
-  if (user) {
-    res.json({ success: true, name: user.name, role: user.role });
+  const dataDir = path.join(__dirname, 'data');
+  const institutions = fs.readdirSync(dataDir).filter(f => fs.statSync(path.join(dataDir, f)).isDirectory());
+
+  let foundUser = null;
+  let institutionId = null;
+
+  for (const inst of institutions) {
+    const workersFile = path.join(dataDir, inst, 'workers.json');
+    if (!fs.existsSync(workersFile)) continue;
+    const users = JSON.parse(fs.readFileSync(workersFile, 'utf8'));
+    const user = users.find(u => u.username === username && u.password === password);
+    if (user) {
+      foundUser = user;
+      institutionId = inst;
+      break;
+    }
+  }
+
+  if (foundUser) {
+    res.json({ 
+      success: true, 
+      name: foundUser.name, 
+      role: foundUser.role,
+      institutionId: institutionId // <-- the folder name
+    });
   } else {
     res.status(401).json({ success: false, message: "Invalid credentials" });
   }
@@ -178,6 +205,29 @@ app.post('/cities/deleteStreet', (req, res) => {
   fs.writeFileSync('cities.json', JSON.stringify(updated, null, 2));
   res.json({ success: true });
 });
+
+// Example: Get all To Do items for an institution
+app.get('/institutions/:institutionId/maintenance_requests', (req, res) => {
+  const file = getInstitutionFile(req.params.institutionId, 'maintenance_requests.json');
+  if (!fs.existsSync(file)) return res.json([]);
+  const data = fs.readFileSync(file, 'utf8');
+  res.json(data.trim() ? JSON.parse(data) : []);
+});
+
+// Example: Add a To Do item for an institution
+app.post('/institutions/:institutionId/maintenance_requests', (req, res) => {
+  const file = getInstitutionFile(req.params.institutionId, 'maintenance_requests.json');
+  let items = [];
+  if (fs.existsSync(file)) {
+    const data = fs.readFileSync(file, 'utf8');
+    items = data.trim() ? JSON.parse(data) : [];
+  }
+  items.push(req.body);
+  fs.writeFileSync(file, JSON.stringify(items, null, 2));
+  res.status(201).json({ success: true });
+});
+
+// Repeat similar logic for workers, cities, completed_maintenance_requests, etc.
 
 // Root
 app.get("/", (req, res) => {
