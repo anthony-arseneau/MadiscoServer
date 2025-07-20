@@ -142,7 +142,7 @@ app.post('/cities', (req, res) => {
 // Login
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
-  const dataDir = path.join(__dirname, 'data');
+  const dataDir = path.join(__dirname, 'institutions');
   const institutions = fs.readdirSync(dataDir).filter(f => fs.statSync(path.join(dataDir, f)).isDirectory());
 
   let foundUser = null;
