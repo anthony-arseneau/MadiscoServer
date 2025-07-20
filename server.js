@@ -129,13 +129,17 @@ app.post('/workers', (req, res) => {
   res.json({ success: true });
 });
 
-// Get cities
-app.get('/cities', (req, res) => {
-  res.json(JSON.parse(fs.readFileSync('cities.json', 'utf8')));
+// Get cities for an institution
+app.get('/institutions/:institutionId/cities', (req, res) => {
+  const file = getInstitutionFile(req.params.institutionId, 'cities.json');
+  if (!fs.existsSync(file)) return res.json([]);
+  const data = fs.readFileSync(file, 'utf8');
+  res.json(data.trim() ? JSON.parse(data) : []);
 });
-// Save cities
-app.post('/cities', (req, res) => {
-  fs.writeFileSync('cities,json', JSON.stringify(req.body, null, 2));
+// Save cities for an institution
+app.post('/institutions/:institutionId/cities', (req, res) => {
+  const file = getInstitutionFile(req.params.institutionId, 'cities.json');
+  fs.writeFileSync(file, JSON.stringify(req.body, null, 2));
   res.json({ success: true });
 });
 
