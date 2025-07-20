@@ -120,11 +120,11 @@ app.post('/maintenance_requests/completed/delete', (req, res) => {
 });
 
 // Get workers
-app.get('/workerUsers', (req, res) => {
-  res.json(JSON.parse(fs.readFileSync(WORKERS_FILE, 'utf8')));
+app.get('/workers', (req, res) => {
+  res.json(JSON.parse(fs.readFileSync('/maintenance_requests.json', 'utf8')));
 });
 // Save workers
-app.post('/workerUsers', (req, res) => {
+app.post('/workers', (req, res) => {
   fs.writeFileSync(WORKERS_FILE, JSON.stringify(req.body, null, 2));
   res.json({ success: true });
 });
@@ -174,11 +174,11 @@ app.post('/login', (req, res) => {
 
 // Manage section for administrator
 // Delete Worker
-app.post('/workerUsers/delete', (req, res) => {
+app.post('/workers/delete', (req, res) => {
   const { username } = req.body;
-  const workers = JSON.parse(fs.readFileSync('workerUsers.json'));
+  const workers = JSON.parse(fs.readFileSync('workers.json'));
   const updated = workers.filter(w => w.username !== username);
-  fs.writeFileSync('workerUsers.json', JSON.stringify(updated, null, 2));
+  fs.writeFileSync('workers.json', JSON.stringify(updated, null, 2));
   res.json({ success: true });
 });
 
