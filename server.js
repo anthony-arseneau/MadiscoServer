@@ -111,13 +111,15 @@ app.post('/institutions/:institutionId/complete', (req, res) => {
 });
 
 // Update To Do item by ID
-app.post('/maintenance_requests/update', (req, res) => {
+// Update To Do item by ID for an institution
+app.post('/institutions/:institutionId/maintenance_requests/update', (req, res) => {
   const { id, updatedItem } = req.body;
-  let items = readDB();
+  const institutionId = req.params.institutionId;
+  let items = readDB(institutionId);
   const idx = items.findIndex(item => item.id === id);
   if (idx !== -1) {
     items[idx] = { ...items[idx], ...updatedItem };
-    writeDB(items);
+    writeDB(institutionId, items);
     res.json({ success: true });
   } else {
     res.status(400).json({ success: false, message: "Invalid id" });

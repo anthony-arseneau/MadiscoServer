@@ -1,16 +1,37 @@
 [
     {
         "id": 0,
-        "name": "John",
-        "username": "john",
+        "name": "Hervé",
+        "username": "herve",
         "password": "password123",
         "role": "administrator"
     },
     {
         "id": 1,
-        "name": "Chris",
-        "username": "chris",
+        "name": "Marc",
+        "username": "marc",
         "password": "password123",
         "role": "manager"
+    },
+    {
+        "id": 2,
+        "name": "Jolyn",
+        "username": "jolyn",
+        "password": "password123",
+        "role": "manager"
+    },
+    {
+        "id": 3,
+        "name": "Éric",
+        "username": "eric",
+        "password": "password123",
+        "role": "manager"
+    },
+    {
+        "id": 4,
+        "name": "Robinson",
+        "username": "robinson",
+        "password": "password123",
+        "role": "worker"
     }
 ]

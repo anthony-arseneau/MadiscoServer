@@ -17,5 +17,166 @@
     "urgency": 1,
     "date": "July 1, 2025",
     "time": "6:02 PM"
+  },
+  {
+    "id": "20ea942d-120d-4391-a1fc-acf56bb4e4c9",
+    "city": "Bathurst",
+    "street": "Vanier",
+    "addressNumber": "737",
+    "apartmentNumber": "2",
+    "problem": "Clogged drain",
+    "comment": "Likely buildup; try snaking before calling plumber.",
+    "mediaUris": [
+      "file:///Users/anthonyarseneau/Library/Developer/CoreSimulator/Devices/9BF8FEC4-5B04-4EBF-84FE-27D4C2E0A4B3/data/Containers/Data/Application/31D2BFF6-2889-4F7B-A9A2-737D04A4A068/Library/Caches/ExponentExperienceData/@anonymous/Madisco-9d348940-3652-4d60-adea-649279ea6826/ImagePicker/C7E46842-8B94-44D4-8622-843F63D62F15.jpg",
+      "file:///Users/anthonyarseneau/Library/Developer/CoreSimulator/Devices/9BF8FEC4-5B04-4EBF-84FE-27D4C2E0A4B3/data/Containers/Data/Application/31D2BFF6-2889-4F7B-A9A2-737D04A4A068/Library/Caches/ExponentExperienceData/@anonymous/Madisco-9d348940-3652-4d60-adea-649279ea6826/ImagePicker/FA827941-1355-4034-A665-9E2844EA2BA8.jpg"
+    ],
+    "assignees": [
+      "Éric"
+    ],
+    "issuer": "Marc",
+    "urgency": "2",
+    "date": "July 1, 2025",
+    "time": "6:03 PM"
+  },
+  {
+    "id": "d6d6144d-3a06-4aaf-a251-2036126c595d",
+    "city": "Bathurst",
+    "street": "Youghall",
+    "addressNumber": "80",
+    "apartmentNumber": "1",
+    "problem": "No hot water",
+    "comment": "Verify tank is on and pilot light is working.",
+    "mediaUris": [],
+    "assignees": [
+      "Hervé"
+    ],
+    "issuer": "Marc",
+    "urgency": "3",
+    "date": "July 1, 2025",
+    "time": "6:04 PM"
+  },
+  {
+    "id": "53c52717-2e3b-4604-b6fd-27b54d4aa5ea",
+    "city": "Petit-Rocher",
+    "street": "Rochette",
+    "addressNumber": "202",
+    "apartmentNumber": "4",
+    "problem": "Heating not working",
+    "comment": "Check thermostat and furnace; tenant reports cold unit.",
+    "mediaUris": [],
+    "assignees": [
+      "Hervé"
+    ],
+    "issuer": "Jolyn",
+    "urgency": "3",
+    "date": "July 1, 2025",
+    "time": "6:05 PM"
+  },
+  {
+    "id": "6db5605f-3fd6-4b76-a687-3318cd68b39d",
+    "city": "Nigadoo",
+    "street": "Principale",
+    "addressNumber": "1080",
+    "apartmentNumber": "5",
+    "problem": "Broken window",
+    "comment": "Glass cracked—needs boarding up or full replacement.",
+    "mediaUris": [
+      "file:///Users/anthonyarseneau/Library/Developer/CoreSimulator/Devices/9BF8FEC4-5B04-4EBF-84FE-27D4C2E0A4B3/data/Containers/Data/Application/31D2BFF6-2889-4F7B-A9A2-737D04A4A068/Library/Caches/ExponentExperienceData/@anonymous/Madisco-9d348940-3652-4d60-adea-649279ea6826/ImagePicker/35F87346-1D89-40CF-9906-DE7E6A0D79BB.jpg"
+    ],
+    "assignees": [
+      "Éric",
+      "Jolyn"
+    ],
+    "issuer": "Jolyn",
+    "urgency": "5",
+    "date": "July 1, 2025",
+    "time": "6:06 PM"
+  },
+  {
+    "id": "f1461290-e943-4768-9c00-c0ecc1cb263a",
+    "city": "Beresford",
+    "street": "Principale",
+    "addressNumber": "807",
+    "apartmentNumber": "7",
+    "problem": "Door lock issue",
+    "comment": "Lock sticks—may need rekeying or lubrication.",
+    "mediaUris": [],
+    "assignees": [],
+    "issuer": "Jolyn",
+    "urgency": "4",
+    "date": "July 1, 2025",
+    "time": "6:07 PM"
+  },
+  {
+    "id": "32f7cc5a-dbea-4436-ba24-71cd799bde9d",
+    "city": "Nigadoo",
+    "street": "Principale",
+    "addressNumber": "806",
+    "apartmentNumber": "2",
+    "problem": "Electrical outlet not working",
+    "comment": "Outlet dead; test circuit and breaker.",
+    "mediaUris": [],
+    "assignees": [
+      "Éric"
+    ],
+    "issuer": "Jolyn",
+    "urgency": "2",
+    "date": "July 1, 2025",
+    "time": "6:08 PM"
+  },
+  {
+    "id": "404293bd-c661-4d98-8806-e89b37ff2758",
+    "city": "Bathurst",
+    "street": "Fleet",
+    "addressNumber": "535",
+    "apartmentNumber": "3",
+    "problem": "Light fixture broken",
+    "comment": "Fixture loose or bulb socket damaged.",
+    "mediaUris": [],
+    "assignees": [
+      "Éric"
+    ],
+    "issuer": "Jolyn",
+    "urgency": "2",
+    "date": "July 1, 2025",
+    "time": "6:09 PM"
+  },
+  {
+    "id": "c4d2d009-a84c-4ecb-878c-359aefa44b9a",
+    "city": "Bathurst",
+    "street": "Archibald",
+    "addressNumber": "505",
+    "apartmentNumber": "2",
+    "problem": "Appliance malfunction",
+    "comment": "Appliance not responding—check power and warranty.",
+    "mediaUris": [
+      "file:///Users/anthonyarseneau/Library/Developer/CoreSimulator/Devices/9BF8FEC4-5B04-4EBF-84FE-27D4C2E0A4B3/data/Containers/Data/Application/31D2BFF6-2889-4F7B-A9A2-737D04A4A068/Library/Caches/ExponentExperienceData/@anonymous/Madisco-9d348940-3652-4d60-adea-649279ea6826/ImagePicker/845089BB-5225-41A4-945C-F36648F00E15.jpg",
+      "file:///Users/anthonyarseneau/Library/Developer/CoreSimulator/Devices/9BF8FEC4-5B04-4EBF-84FE-27D4C2E0A4B3/data/Containers/Data/Application/31D2BFF6-2889-4F7B-A9A2-737D04A4A068/Library/Caches/ExponentExperienceData/@anonymous/Madisco-9d348940-3652-4d60-adea-649279ea6826/ImagePicker/6188AE3E-8682-4AF6-901D-64BF7ED59632.jpg",
+      "file:///Users/anthonyarseneau/Library/Developer/CoreSimulator/Devices/9BF8FEC4-5B04-4EBF-84FE-27D4C2E0A4B3/data/Containers/Data/Application/31D2BFF6-2889-4F7B-A9A2-737D04A4A068/Library/Caches/ExponentExperienceData/@anonymous/Madisco-9d348940-3652-4d60-adea-649279ea6826/ImagePicker/D6FC2BB5-69AD-4157-BB52-AC3A32DA125C.jpg"
+    ],
+    "assignees": [
+      "Jolyn"
+    ],
+    "issuer": "Jolyn",
+    "urgency": 1,
+    "date": "July 1, 2025",
+    "time": "6:10 PM"
+  },
+  {
+    "id": "4596d294-909b-45ac-8d0e-9dddf07b740e",
+    "city": "Bathurst",
+    "street": "Archibald",
+    "addressNumber": "535",
+    "apartmentNumber": "",
+    "problem": "Pest infestation",
+    "comment": "Tenant reported bugs—schedule pest control.",
+    "mediaUris": [],
+    "assignees": [
+      "Jolyn"
+    ],
+    "issuer": "Hervé",
+    "urgency": 1,
+    "date": "July 1, 2025",
+    "time": "6:11 PM"
   }
 ]
