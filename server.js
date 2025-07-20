@@ -50,7 +50,7 @@ function writeCompletedDB(institutionId, data) {
 
 // Helper to get file path for an institution
 function getInstitutionFile(institutionId, file) {
-  return path.join(__dirname, 'data', institutionId, file);
+  return path.join(__dirname, 'institutions', institutionId, file);
 }
 
 // ===== ROUTES =====
