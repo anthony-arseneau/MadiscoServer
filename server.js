@@ -124,21 +124,23 @@ app.post('/maintenance_requests/update', (req, res) => {
   }
 });
 
-// Delete To Do items
-app.post('/maintenance_requests/delete', (req, res) => {
+// Delete To Do items for an institution
+app.post('/institutions/:institutionId/maintenance_requests/delete', (req, res) => {
   const { ids } = req.body;
-  let items = readDB();
+  const institutionId = req.params.institutionId;
+  let items = readDB(institutionId);
   items = items.filter(item => !ids.includes(item.id));
-  writeDB(items);
+  writeDB(institutionId, items);
   res.json({ success: true });
 });
 
-// Delete Done items
-app.post('/maintenance_requests/completed/delete', (req, res) => {
+// Delete Done items for an institution
+app.post('/institutions/:institutionId/completed_maintenance_requests/delete', (req, res) => {
   const { ids } = req.body;
-  let completed = readCompletedDB();
+  const institutionId = req.params.institutionId;
+  let completed = readCompletedDB(institutionId);
   completed = completed.filter(item => !ids.includes(item.id));
-  writeCompletedDB(completed);
+  writeCompletedDB(institutionId, completed);
   res.json({ success: true });
 });
 
