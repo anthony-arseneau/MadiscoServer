@@ -110,8 +110,7 @@ app.post('/institutions/:institutionId/complete', (req, res) => {
   res.json({ success: true });
 });
 
-// Update To Do item by ID
-// Update To Do item by ID for an institution
+
 app.post('/institutions/:institutionId/maintenance_requests/update', (req, res) => {
   const { id, updatedItem } = req.body;
   const institutionId = req.params.institutionId;
@@ -128,13 +127,18 @@ app.post('/institutions/:institutionId/maintenance_requests/update', (req, res) 
 
 // Delete To Do items for an institution
 app.post('/institutions/:institutionId/maintenance_requests/delete', (req, res) => {
-  console.log('yo2')
   const { ids } = req.body;
   const institutionId = req.params.institutionId;
   let items = readDB(institutionId);
+  // Debug log: show ids and items before deletion
+  console.log('Delete called for institution:', institutionId, 'ids:', ids, 'existing ids:', items.map(i => i.id));
+  const beforeCount = items.length;
   items = items.filter(item => !ids.includes(item.id));
+  const afterCount = items.length;
   writeDB(institutionId, items);
-  res.json({ success: true });
+  // Debug log: show how many were deleted
+  console.log('Deleted', beforeCount - afterCount, 'items');
+  res.json({ success: true, deleted: beforeCount - afterCount });
 });
 
 // Delete Done items for an institution
