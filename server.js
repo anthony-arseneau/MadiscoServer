@@ -157,6 +157,7 @@ app.post('/workerUsers/delete', (req, res) => {
   const updated = workers.filter(w => w.username !== username);
   fs.writeFileSync('workerUsers.json', JSON.stringify(updated, null, 2));
   res.json({ success: true });
+  console.log("test")
 });
 
 app.post('/cities/delete', (req, res) => {
