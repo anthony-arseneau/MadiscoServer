@@ -15,7 +15,6 @@ app.use((req, res, next) => {
 
 // Institution-aware helpers
 function readDB(institutionId) {
-  console.log('request to see maintenance requests from' + institutionId);
   const file = getInstitutionFile(institutionId, 'maintenance_requests.json');
   if (!fs.existsSync(file)) return [];
   try {
@@ -208,6 +207,7 @@ app.post('/cities/deleteStreet', (req, res) => {
 
 // Example: Get all To Do items for an institution
 app.get('/institutions/:institutionId/maintenance_requests', (req, res) => {
+  console.log('this call');
   const file = getInstitutionFile(req.params.institutionId, 'maintenance_requests.json');
   if (!fs.existsSync(file)) return res.json([]);
   const data = fs.readFileSync(file, 'utf8');
