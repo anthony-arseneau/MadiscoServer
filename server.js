@@ -130,15 +130,9 @@ app.post('/institutions/:institutionId/delete', (req, res) => {
   const { ids } = req.body;
   const institutionId = req.params.institutionId;
   let items = readDB(institutionId);
-  // Debug log: show ids and items before deletion
-  console.log('Delete called for institution:', institutionId, 'ids:', ids, 'existing ids:', items.map(i => i.id));
-  const beforeCount = items.length;
   items = items.filter(item => !ids.includes(item.id));
-  const afterCount = items.length;
   writeDB(institutionId, items);
-  // Debug log: show how many were deleted
-  console.log('Deleted', beforeCount - afterCount, 'items');
-  res.json({ success: true, deleted: beforeCount - afterCount });
+  res.json({ success: true });
 });
 
 // Delete Done items for an institution
@@ -151,13 +145,17 @@ app.post('/institutions/:institutionId/completed_maintenance_requests/delete', (
   res.json({ success: true });
 });
 
-// Get workers
-app.get('/workers', (req, res) => {
-  res.json(JSON.parse(fs.readFileSync('/workers.json', 'utf8')));
+// Get workers for an institution
+app.get('/institutions/:institutionId/workers', (req, res) => {
+  const file = getInstitutionFile(req.params.institutionId, 'workers.json');
+  if (!fs.existsSync(file)) return res.json([]);
+  const data = fs.readFileSync(file, 'utf8');
+  res.json(data.trim() ? JSON.parse(data) : []);
 });
-// Save workers
-app.post('/workers', (req, res) => {
-  fs.writeFileSync(WORKERS_FILE, JSON.stringify(req.body, null, 2));
+// Save workers for an institution
+app.post('/institutions/:institutionId/workers', (req, res) => {
+  const file = getInstitutionFile(req.params.institutionId, 'workers.json');
+  fs.writeFileSync(file, JSON.stringify(req.body, null, 2));
   res.json({ success: true });
 });
 
@@ -209,32 +207,49 @@ app.post('/login', (req, res) => {
 });
 
 // Manage section for administrator
-// Delete Worker
-app.post('/workers/delete', (req, res) => {
+// Delete Worker for an institution
+app.post('/institutions/:institutionId/workers/delete', (req, res) => {
   const { username } = req.body;
-  const workers = JSON.parse(fs.readFileSync('workers.json'));
+  const institutionId = req.params.institutionId;
+  const file = getInstitutionFile(institutionId, 'workers.json');
+  let workers = [];
+  if (fs.existsSync(file)) {
+    workers = JSON.parse(fs.readFileSync(file, 'utf8'));
+  }
   const updated = workers.filter(w => w.username !== username);
-  fs.writeFileSync('workers.json', JSON.stringify(updated, null, 2));
+  fs.writeFileSync(file, JSON.stringify(updated, null, 2));
   res.json({ success: true });
 });
 
-app.post('/cities/delete', (req, res) => {
+// Delete City for an institution
+app.post('/institutions/:institutionId/cities/delete', (req, res) => {
   const { cityName } = req.body;
-  const cities = JSON.parse(fs.readFileSync('cities.json'));
+  const institutionId = req.params.institutionId;
+  const file = getInstitutionFile(institutionId, 'cities.json');
+  let cities = [];
+  if (fs.existsSync(file)) {
+    cities = JSON.parse(fs.readFileSync(file, 'utf8'));
+  }
   const updated = cities.filter(c => c.name !== cityName);
-  fs.writeFileSync('cities.json', JSON.stringify(updated, null, 2));
+  fs.writeFileSync(file, JSON.stringify(updated, null, 2));
   res.json({ success: true });
 });
 
-app.post('/cities/deleteStreet', (req, res) => {
+// Delete Street from City for an institution
+app.post('/institutions/:institutionId/cities/deleteStreet', (req, res) => {
   const { cityName, streetName } = req.body;
-  const cities = JSON.parse(fs.readFileSync('cities.json'));
+  const institutionId = req.params.institutionId;
+  const file = getInstitutionFile(institutionId, 'cities.json');
+  let cities = [];
+  if (fs.existsSync(file)) {
+    cities = JSON.parse(fs.readFileSync(file, 'utf8'));
+  }
   const updated = cities.map(c =>
     c.name === cityName
       ? { ...c, streets: c.streets.filter(s => s !== streetName) }
       : c
   );
-  fs.writeFileSync('cities.json', JSON.stringify(updated, null, 2));
+  fs.writeFileSync(file, JSON.stringify(updated, null, 2));
   res.json({ success: true });
 });
 
