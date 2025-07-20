@@ -1,18 +1,18 @@
 [
   {
-    "name": "Bathurst",
-    "streets": ["Victoria", "Picot", "Vanier", "Youghall", "Archibald", "Fleet", "Coffyn", "Appleby", "St Peter", "Sycamore"]
+    "name": "New York",
+    "streets": ["1st", "2nd"]
   },
   {
-    "name": "Beresford",
-    "streets": ["Principale"]
+    "name": "San Francisco",
+    "streets": ["Rocks"]
   },
   {
-    "name": "Nigadoo",
-    "streets": ["Principale"]
+    "name": "Miami",
+    "streets": ["Paper"]
   },
   {
-    "name": "Petit-Rocher",
+    "name": "Seattle",
     "streets": ["Principale", "Rochette", "Havre", "Madisco"]
   }
 ]
