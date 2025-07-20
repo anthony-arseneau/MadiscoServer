@@ -131,11 +131,11 @@ app.post('/workers', (req, res) => {
 
 // Get cities
 app.get('/cities', (req, res) => {
-  res.json(JSON.parse(fs.readFileSync(CITIES_FILE, 'utf8')));
+  res.json(JSON.parse(fs.readFileSync('cities.json', 'utf8')));
 });
 // Save cities
 app.post('/cities', (req, res) => {
-  fs.writeFileSync(CITIES_FILE, JSON.stringify(req.body, null, 2));
+  fs.writeFileSync('cities,json', JSON.stringify(req.body, null, 2));
   res.json({ success: true });
 });
 
