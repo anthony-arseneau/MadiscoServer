@@ -126,6 +126,7 @@ app.post('/maintenance_requests/update', (req, res) => {
 
 // Delete To Do items for an institution
 app.post('/institutions/:institutionId/maintenance_requests/delete', (req, res) => {
+  console.log('yo2')
   const { ids } = req.body;
   const institutionId = req.params.institutionId;
   let items = readDB(institutionId);
