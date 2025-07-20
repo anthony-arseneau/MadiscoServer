@@ -121,7 +121,7 @@ app.post('/maintenance_requests/completed/delete', (req, res) => {
 
 // Get workers
 app.get('/workers', (req, res) => {
-  res.json(JSON.parse(fs.readFileSync('/maintenance_requests.json', 'utf8')));
+  res.json(JSON.parse(fs.readFileSync('/workers.json', 'utf8')));
 });
 // Save workers
 app.post('/workers', (req, res) => {
