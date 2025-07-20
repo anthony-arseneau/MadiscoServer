@@ -15,6 +15,7 @@ app.use((req, res, next) => {
 
 // Institution-aware helpers
 function readDB(institutionId) {
+  console.log('request to see maintenance requests from' + institutionId);
   const file = getInstitutionFile(institutionId, 'maintenance_requests.json');
   if (!fs.existsSync(file)) return [];
   try {
