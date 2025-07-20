@@ -5,10 +5,6 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const app = express();
 const PORT = 8080;
-const DB_FILE = './maintenance_requests.json';
-const COMPLETED_DB_FILE = './completed_maintenance_requests.json';
-const WORKERS_FILE = './workerUsers.json';
-const CITIES_FILE = './cities.json';
 
 app.use(cors());
 app.use(bodyParser.json());
