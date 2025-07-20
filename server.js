@@ -66,6 +66,7 @@ app.get('/institutions/:institutionId/maintenance_requests', (req, res) => {
 
 // Add a To Do item for an institution
 app.post('/institutions/:institutionId/maintenance_requests', (req, res) => {
+  console.log('yo')
   const file = getInstitutionFile(req.params.institutionId, 'maintenance_requests.json');
   let items = [];
   if (fs.existsSync(file)) {
