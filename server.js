@@ -266,6 +266,6 @@ app.get("/", (req, res) => {
   res.send("Server is running!");
 });
 
-https.createServer(options, app).listen(443, () => {
-  console.log('HTTPS server running on port 443');
+https.createServer(options, app).listen(PORT, '0.0.0.0', () => {
+  console.log(`HTTPS Server running on https://0.0.0.0:${PORT}`);
 });
