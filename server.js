@@ -8,8 +8,8 @@ const app = express();
 
 // HTTPS configuration
 const options = {
-  key: fs.readFileSync('/path/to/your/private.key'),
-  cert: fs.readFileSync('/path/to/your/certificate.crt')
+  key: fs.readFileSync('/etc/letsencrypt/live/anthonyarseneau.ca/privkey.pem'),
+  cert: fs.readFileSync('/etc/letsencrypt/live/anthonyarseneau.ca/fullchain.pem')
 };
 
 const PORT = process.env.PORT || 8080;
