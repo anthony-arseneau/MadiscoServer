@@ -262,7 +262,7 @@ app.post('/institutions/:institutionId/cities/deleteStreet', (req, res) => {
 });
 
 app.get('/institutions/test', (req, res) => {
-  res.json({ ok: true, message: "Proxy is working ✅" });
+  res.json({ ok: true, message: "Proxy route works!" });
 });
 
 // Root
