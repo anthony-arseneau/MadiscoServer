@@ -261,6 +261,10 @@ app.post('/institutions/:institutionId/cities/deleteStreet', (req, res) => {
   res.json({ success: true });
 });
 
+app.get('/institutions/test', (req, res) => {
+  res.json({ ok: true, message: "Proxy is working ✅" });
+});
+
 // Root
 app.get("/", (req, res) => {
   res.send("Server is running!");
