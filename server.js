@@ -12,7 +12,7 @@ const options = {
   cert: fs.readFileSync('/etc/letsencrypt/live/anthonyarseneau.ca/fullchain.pem')
 };
 
-const PORT = process.env.PORT || 443;
+const PORT = process.env.PORT || 8080;
 
 app.use(cors());
 app.use(bodyParser.json());
