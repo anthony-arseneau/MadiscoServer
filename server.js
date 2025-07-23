@@ -270,8 +270,8 @@ app.get("/", (req, res) => {
   res.send("Server is running!");
 });
 
-https.createServer(options, app).listen(PORT, '0.0.0.0', () => {
-  console.log(`HTTPS Server running on https://0.0.0.0:${PORT}`);
+https.createServer(options, app).listen(PORT, '127.0.0.1', () => {
+  console.log(`HTTPS Server running on https://127.0.0.1:${PORT}`);
 });
 
 // app.listen(PORT, '0.0.0.0', () => {
