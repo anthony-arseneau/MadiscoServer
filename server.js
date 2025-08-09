@@ -5,9 +5,6 @@ const app = express();
 
 const PORT = 443;
 
-app.use(cors());
-app.use(bodyParser.json());
-
 const options = {
   key: fs.readFileSync('/etc/letsencrypt/live/anthonyarseneau.ca/privkey.pem'),
   cert: fs.readFileSync('/etc/letsencrypt/live/anthonyarseneau.ca/fullchain.pem')
