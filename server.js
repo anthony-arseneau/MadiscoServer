@@ -2,6 +2,9 @@ const https = require('https');
 const express = require('express');
 const fs = require('fs');
 const app = express();
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const path = require('path');  // also needed for your getInstitutionFile function
 
 const PORT = 443;
 
