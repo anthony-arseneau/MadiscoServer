@@ -177,6 +177,7 @@ app.post('/institutions/:institutionId/cities', (req, res) => {
 
 // Login
 app.post('/login', (req, res) => {
+  console.log("attempt to log in")
   const { username, password } = req.body;
   const dataDir = path.join(__dirname, 'institutions');
   const institutions = fs.readdirSync(dataDir).filter(f => fs.statSync(path.join(dataDir, f)).isDirectory());
