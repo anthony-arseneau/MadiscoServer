@@ -59,6 +59,7 @@ function getInstitutionFile(institutionId, file) {
 
 // Get all To Do items for an institution
 app.get('/institutions/:institutionId/maintenance_requests', (req, res) => {
+  console.log("attempt to get maintenance requests")
   const file = getInstitutionFile(req.params.institutionId, 'maintenance_requests.json');
   if (!fs.existsSync(file)) return res.json([]);
   const data = fs.readFileSync(file, 'utf8');
