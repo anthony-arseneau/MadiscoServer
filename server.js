@@ -1,14 +1,14 @@
-const https = require('https');
 const express = require('express');
 const fs = require('fs');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const path = require('path');
 const app = express();
 
-const PORT = 443;
+const PORT = 8081;
 
-const options = {
-  key: fs.readFileSync('/etc/letsencrypt/live/anthonyarseneau.ca/privkey.pem'),
-  cert: fs.readFileSync('/etc/letsencrypt/live/anthonyarseneau.ca/fullchain.pem')
-};
+app.use(cors());
+app.use(bodyParser.json());
 
 app.use((req, res, next) => {
   next();
@@ -263,6 +263,7 @@ app.get("/", (req, res) => {
   res.send("Server is running!");
 });
 
-https.createServer(options, app).listen(PORT, () => {
-  console.log(`HTTPS Server running on port ${PORT}`);
+// Listen on HTTP port 3000 only on localhost
+app.listen(PORT, '127.0.0.1', () => {
+  console.log(`HTTP Server running on http://127.0.0.1:${PORT}`);
 });
