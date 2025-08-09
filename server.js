@@ -7,7 +7,7 @@ const app = express();
 
 const PORT = 8081;
 
-app.use(cors());
+//app.use(cors());
 app.use(bodyParser.json());
 
 app.use((req, res, next) => {
