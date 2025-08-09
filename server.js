@@ -1,10 +1,6 @@
 const https = require("https");
 const express = require("express");
 const fs = require("fs");
-const cors = require("cors");
-const bodyParser = require("body-parser");
-const path = require("path");
-
 const app = express();
 
 const options = {
@@ -15,14 +11,8 @@ const options = {
 app.use(cors());
 app.use(bodyParser.json());
 
-// Helper function example
-function getInstitutionFile(institutionId, file) {
-  return path.join(__dirname, "institutions", institutionId, file);
-}
-
-// Sample route
-app.get("/", (req, res) => {
-  res.send("HTTPS Express server running!");
+app.use((req, res, next) => {
+  next();
 });
 
 // Institution-aware helpers
