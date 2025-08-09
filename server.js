@@ -5,6 +5,8 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const path = require("path");
 
+const PORT = 8081
+
 const app = express();
 
 const options = {
@@ -274,6 +276,7 @@ app.get("/", (req, res) => {
   res.send("Server is running!");
 });
 
-https.createServer(options, app).listen(8081, () => {
-  console.log("HTTPS server running on port 8081");
+// Listen on HTTP port 3000 only on localhost
+app.listen(PORT, '127.0.0.1', () => {
+  console.log(`HTTP Server running on http://127.0.0.1:${PORT}`);
 });
