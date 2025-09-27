@@ -7,9 +7,7 @@
     "apartmentNumber": "3",
     "problem": "Leaking faucet",
     "comment": "Check washer or valve; might need replacement.",
-    "mediaUris": [
-      "file:///Users/anthonyarseneau/Library/Developer/CoreSimulator/Devices/9BF8FEC4-5B04-4EBF-84FE-27D4C2E0A4B3/data/Containers/Data/Application/31D2BFF6-2889-4F7B-A9A2-737D04A4A068/Library/Caches/ExponentExperienceData/@anonymous/Madisco-9d348940-3652-4d60-adea-649279ea6826/ImagePicker/3E4E3303-CE3B-4AD3-A255-D20ECA14071B.jpg"
-    ],
+    "mediaUris": [],
     "assignees": [
       "Jolyn"
     ],
@@ -26,10 +24,7 @@
     "apartmentNumber": "2",
     "problem": "Clogged drain",
     "comment": "Likely buildup; try snaking before calling plumber.",
-    "mediaUris": [
-      "file:///Users/anthonyarseneau/Library/Developer/CoreSimulator/Devices/9BF8FEC4-5B04-4EBF-84FE-27D4C2E0A4B3/data/Containers/Data/Application/31D2BFF6-2889-4F7B-A9A2-737D04A4A068/Library/Caches/ExponentExperienceData/@anonymous/Madisco-9d348940-3652-4d60-adea-649279ea6826/ImagePicker/C7E46842-8B94-44D4-8622-843F63D62F15.jpg",
-      "file:///Users/anthonyarseneau/Library/Developer/CoreSimulator/Devices/9BF8FEC4-5B04-4EBF-84FE-27D4C2E0A4B3/data/Containers/Data/Application/31D2BFF6-2889-4F7B-A9A2-737D04A4A068/Library/Caches/ExponentExperienceData/@anonymous/Madisco-9d348940-3652-4d60-adea-649279ea6826/ImagePicker/FA827941-1355-4034-A665-9E2844EA2BA8.jpg"
-    ],
+    "mediaUris": [],
     "assignees": [
       "Éric"
     ],
@@ -80,9 +75,7 @@
     "apartmentNumber": "5",
     "problem": "Broken window",
     "comment": "Glass cracked—needs boarding up or full replacement.",
-    "mediaUris": [
-      "file:///Users/anthonyarseneau/Library/Developer/CoreSimulator/Devices/9BF8FEC4-5B04-4EBF-84FE-27D4C2E0A4B3/data/Containers/Data/Application/31D2BFF6-2889-4F7B-A9A2-737D04A4A068/Library/Caches/ExponentExperienceData/@anonymous/Madisco-9d348940-3652-4d60-adea-649279ea6826/ImagePicker/35F87346-1D89-40CF-9906-DE7E6A0D79BB.jpg"
-    ],
+    "mediaUris": [],
     "assignees": [
       "Éric",
       "Jolyn"
@@ -149,11 +142,7 @@
     "apartmentNumber": "2",
     "problem": "Appliance malfunction",
     "comment": "Appliance not responding—check power and warranty.",
-    "mediaUris": [
-      "file:///Users/anthonyarseneau/Library/Developer/CoreSimulator/Devices/9BF8FEC4-5B04-4EBF-84FE-27D4C2E0A4B3/data/Containers/Data/Application/31D2BFF6-2889-4F7B-A9A2-737D04A4A068/Library/Caches/ExponentExperienceData/@anonymous/Madisco-9d348940-3652-4d60-adea-649279ea6826/ImagePicker/845089BB-5225-41A4-945C-F36648F00E15.jpg",
-      "file:///Users/anthonyarseneau/Library/Developer/CoreSimulator/Devices/9BF8FEC4-5B04-4EBF-84FE-27D4C2E0A4B3/data/Containers/Data/Application/31D2BFF6-2889-4F7B-A9A2-737D04A4A068/Library/Caches/ExponentExperienceData/@anonymous/Madisco-9d348940-3652-4d60-adea-649279ea6826/ImagePicker/6188AE3E-8682-4AF6-901D-64BF7ED59632.jpg",
-      "file:///Users/anthonyarseneau/Library/Developer/CoreSimulator/Devices/9BF8FEC4-5B04-4EBF-84FE-27D4C2E0A4B3/data/Containers/Data/Application/31D2BFF6-2889-4F7B-A9A2-737D04A4A068/Library/Caches/ExponentExperienceData/@anonymous/Madisco-9d348940-3652-4d60-adea-649279ea6826/ImagePicker/D6FC2BB5-69AD-4157-BB52-AC3A32DA125C.jpg"
-    ],
+    "mediaUris": [],
     "assignees": [
       "Jolyn"
     ],
