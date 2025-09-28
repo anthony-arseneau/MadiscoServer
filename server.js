@@ -309,6 +309,30 @@ app.put('/institutions/:institutionId/todo/:itemId', (req, res) => {
   res.json({ success: true, item: items[itemIndex] });
 });
 
+// Update a specific Done item for an institution
+app.put('/institutions/:institutionId/completed/:itemId', (req, res) => {
+  const { itemId } = req.params;
+  const institutionId = req.params.institutionId;
+  const updatedItem = req.body;
+  
+  console.log(`Updating completed item ${itemId} for institution ${institutionId}`);
+  
+  let completed = readCompletedDB(institutionId);
+  const itemIndex = completed.findIndex(item => item.id === itemId);
+  
+  if (itemIndex === -1) {
+    return res.status(404).json({ success: false, message: "Completed item not found" });
+  }
+  
+  // Update the item while preserving the original ID
+  completed[itemIndex] = { ...updatedItem, id: itemId };
+  
+  writeCompletedDB(institutionId, completed);
+  
+  console.log(`Successfully updated completed item ${itemId}`);
+  res.json({ success: true, item: completed[itemIndex] });
+});
+
 app.get('/institutions/test', (req, res) => {
   res.json({ ok: true, message: "Proxy route works!" });
 });
