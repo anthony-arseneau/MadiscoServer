@@ -243,6 +243,30 @@ app.post('/institutions/:institutionId/cities/delete', (req, res) => {
   res.json({ success: true });
 });
 
+// Assign workers to To Do items for an institution
+app.post('/institutions/:institutionId/assign', (req, res) => {
+  const { ids, workers } = req.body;
+  const institutionId = req.params.institutionId;
+  
+  let items = readDB(institutionId);
+  
+  // Update each item's assignees
+  items = items.map(item => {
+    if (ids.includes(item.id)) {
+      return { 
+        ...item, 
+        assignees: Array.isArray(item.assignees) 
+          ? [...new Set([...item.assignees, ...workers])] // Merge and remove duplicates
+          : workers // If assignees doesn't exist, set to workers
+      };
+    }
+    return item;
+  });
+  
+  writeDB(institutionId, items);
+  res.json({ success: true });
+});
+
 // Delete Street from City for an institution
 app.post('/institutions/:institutionId/cities/deleteStreet', (req, res) => {
   const { cityName, streetName } = req.body;
