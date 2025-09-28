@@ -285,6 +285,30 @@ app.post('/institutions/:institutionId/cities/deleteStreet', (req, res) => {
   res.json({ success: true });
 });
 
+// Update a specific To Do item for an institution
+app.put('/institutions/:institutionId/todo/:itemId', (req, res) => {
+  const { itemId } = req.params;
+  const institutionId = req.params.institutionId;
+  const updatedItem = req.body;
+  
+  console.log(`Updating item ${itemId} for institution ${institutionId}`);
+  
+  let items = readDB(institutionId);
+  const itemIndex = items.findIndex(item => item.id === itemId);
+  
+  if (itemIndex === -1) {
+    return res.status(404).json({ success: false, message: "Item not found" });
+  }
+  
+  // Update the item while preserving the original ID
+  items[itemIndex] = { ...updatedItem, id: itemId };
+  
+  writeDB(institutionId, items);
+  
+  console.log(`Successfully updated item ${itemId}`);
+  res.json({ success: true, item: items[itemIndex] });
+});
+
 app.get('/institutions/test', (req, res) => {
   res.json({ ok: true, message: "Proxy route works!" });
 });
