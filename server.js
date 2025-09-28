@@ -274,3 +274,20 @@ app.get("/", (req, res) => {
 app.listen(PORT, '127.0.0.1', () => {
   console.log(`HTTP Server running on http://127.0.0.1:${PORT}`);
 });
+
+// Reopen Done items for an institution (move back to To Do)
+app.post('/institutions/:institutionId/completed_maintenance_requests/reopen', (req, res) => {
+  const { ids } = req.body;
+  const institutionId = req.params.institutionId;
+
+  let items = readDB(institutionId);
+  let completed = readCompletedDB(institutionId);
+
+  const toReopen = completed.filter(item => ids.includes(item.id));
+  completed = completed.filter(item => !ids.includes(item.id));
+
+  writeDB(institutionId, [...items, ...toReopen]);
+  writeCompletedDB(institutionId, completed);
+
+  res.json({ success: true });
+});
