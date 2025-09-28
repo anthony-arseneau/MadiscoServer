@@ -289,20 +289,12 @@ app.get('/institutions/test', (req, res) => {
   res.json({ ok: true, message: "Proxy route works!" });
 });
 
-// Root
-app.get("/", (req, res) => {
-  res.send("Server is running!");
-});
-
-// Listen on HTTP port 3000 only on localhost
-app.listen(PORT, '127.0.0.1', () => {
-  console.log(`HTTP Server running on http://127.0.0.1:${PORT}`);
-});
-
 // Reopen Done items for an institution (move back to To Do)
 app.post('/institutions/:institutionId/completed_maintenance_requests/reopen', (req, res) => {
   const { ids } = req.body;
   const institutionId = req.params.institutionId;
+  
+  console.log(`Reopening items ${ids} for institution ${institutionId}`); // Add debug log
 
   let items = readDB(institutionId);
   let completed = readCompletedDB(institutionId);
@@ -313,5 +305,17 @@ app.post('/institutions/:institutionId/completed_maintenance_requests/reopen', (
   writeDB(institutionId, [...items, ...toReopen]);
   writeCompletedDB(institutionId, completed);
 
+  console.log(`Successfully reopened ${toReopen.length} items`); // Add debug log
+
   res.json({ success: true });
+});
+
+// Root
+app.get("/", (req, res) => {
+  res.send("Server is running!");
+});
+
+// Listen on HTTP port 3000 only on localhost
+app.listen(PORT, '127.0.0.1', () => {
+  console.log(`HTTP Server running on http://127.0.0.1:${PORT}`);
 });
