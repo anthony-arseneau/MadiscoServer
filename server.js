@@ -123,11 +123,13 @@ app.get('/institutions/:institutionId/last-update', (req, res) => {
   const institutionId = req.params.institutionId;
   const lastUpdate = getLastUpdateTime(institutionId);
   
+  console.log(`Last update request for ${institutionId}:`, lastUpdate);
+  
   if (lastUpdate) {
     res.json({ 
       success: true, 
       lastUpdate: lastUpdate,
-      timestamp: new Date(lastUpdate).getTime() // Also provide Unix timestamp
+      timestamp: new Date(lastUpdate).getTime()
     });
   } else {
     res.json({ 
@@ -152,7 +154,7 @@ app.get('/institutions/:institutionId/maintenance_requests', (req, res) => {
 
 // Add a To Do item for an institution
 app.post('/institutions/:institutionId/maintenance_requests', (req, res) => {
-  console.log('Adding new maintenance request')
+  console.log('yo')
   const file = getInstitutionFile(req.params.institutionId, 'maintenance_requests.json');
   let items = [];
   if (fs.existsSync(file)) {
@@ -161,7 +163,7 @@ app.post('/institutions/:institutionId/maintenance_requests', (req, res) => {
   }
   items.push(req.body);
   fs.writeFileSync(file, JSON.stringify(items, null, 2));
-  updateLastUpdateTime(req.params.institutionId); // Track the update
+  updateLastUpdateTime(req.params.institutionId); // Add this line
   res.status(201).json({ success: true });
 });
 
@@ -172,6 +174,13 @@ app.get('/institutions/:institutionId/completed_maintenance_requests', (req, res
   const data = fs.readFileSync(file, 'utf8');
   res.json(data.trim() ? JSON.parse(data) : []);
 });
+
+
+// Replace all To Do items
+// app.put('/maintenance_requests', (req, res) => {
+//   writeDB(req.body);
+//   res.status(200).json({ success: true });
+// });
 
 // Complete To Do items for an institution
 app.post('/institutions/:institutionId/complete', (req, res) => {
@@ -190,7 +199,7 @@ app.post('/institutions/:institutionId/complete', (req, res) => {
   res.json({ success: true });
 });
 
-// Update maintenance request
+
 app.post('/institutions/:institutionId/maintenance_requests/update', (req, res) => {
   const { id, updatedItem } = req.body;
   const institutionId = req.params.institutionId;
@@ -203,54 +212,6 @@ app.post('/institutions/:institutionId/maintenance_requests/update', (req, res) 
   } else {
     res.status(400).json({ success: false, message: "Invalid id" });
   }
-});
-
-// Update a specific To Do item for an institution
-app.put('/institutions/:institutionId/todo/:itemId', (req, res) => {
-  const { itemId } = req.params;
-  const institutionId = req.params.institutionId;
-  const updatedItem = req.body;
-  
-  console.log(`Updating item ${itemId} for institution ${institutionId}`);
-  
-  let items = readDB(institutionId);
-  const itemIndex = items.findIndex(item => item.id === itemId);
-  
-  if (itemIndex === -1) {
-    return res.status(404).json({ success: false, message: "Item not found" });
-  }
-  
-  // Update the item while preserving the original ID
-  items[itemIndex] = { ...updatedItem, id: itemId };
-  
-  writeDB(institutionId, items);
-  
-  console.log(`Successfully updated item ${itemId}`);
-  res.json({ success: true, item: items[itemIndex] });
-});
-
-// Update a specific Done item for an institution
-app.put('/institutions/:institutionId/completed/:itemId', (req, res) => {
-  const { itemId } = req.params;
-  const institutionId = req.params.institutionId;
-  const updatedItem = req.body;
-  
-  console.log(`Updating completed item ${itemId} for institution ${institutionId}`);
-  
-  let completed = readCompletedDB(institutionId);
-  const itemIndex = completed.findIndex(item => item.id === itemId);
-  
-  if (itemIndex === -1) {
-    return res.status(404).json({ success: false, message: "Completed item not found" });
-  }
-  
-  // Update the item while preserving the original ID
-  completed[itemIndex] = { ...updatedItem, id: itemId };
-  
-  writeCompletedDB(institutionId, completed);
-  
-  console.log(`Successfully updated completed item ${itemId}`);
-  res.json({ success: true, item: completed[itemIndex] });
 });
 
 // Delete To Do items for an institution
@@ -364,7 +325,127 @@ app.post('/institutions/:institutionId/cities/delete', (req, res) => {
   res.json({ success: true });
 });
 
-// Listen on HTTP port 8081 only on localhost
+// Assign workers to To Do items for an institution
+app.post('/institutions/:institutionId/assign', (req, res) => {
+  const { ids, workers } = req.body;
+  const institutionId = req.params.institutionId;
+  
+  let items = readDB(institutionId);
+  
+  // Update each item's assignees
+  items = items.map(item => {
+    if (ids.includes(item.id)) {
+      return { 
+        ...item, 
+        assignees: Array.isArray(item.assignees) 
+          ? [...new Set([...item.assignees, ...workers])] // Merge and remove duplicates
+          : workers // If assignees doesn't exist, set to workers
+      };
+    }
+    return item;
+  });
+  
+  writeDB(institutionId, items);
+  res.json({ success: true });
+});
+
+// Delete Street from City for an institution
+app.post('/institutions/:institutionId/cities/deleteStreet', (req, res) => {
+  const { cityName, streetName } = req.body;
+  const institutionId = req.params.institutionId;
+  const file = getInstitutionFile(institutionId, 'cities.json');
+  let cities = [];
+  if (fs.existsSync(file)) {
+    cities = JSON.parse(fs.readFileSync(file, 'utf8'));
+  }
+  const updated = cities.map(c =>
+    c.name === cityName
+      ? { ...c, streets: c.streets.filter(s => s !== streetName) }
+      : c
+  );
+  fs.writeFileSync(file, JSON.stringify(updated, null, 2));
+  res.json({ success: true });
+});
+
+// Update a specific To Do item for an institution
+app.put('/institutions/:institutionId/todo/:itemId', (req, res) => {
+  const { itemId } = req.params;
+  const institutionId = req.params.institutionId;
+  const updatedItem = req.body;
+  
+  console.log(`Updating item ${itemId} for institution ${institutionId}`);
+  
+  let items = readDB(institutionId);
+  const itemIndex = items.findIndex(item => item.id === itemId);
+  
+  if (itemIndex === -1) {
+    return res.status(404).json({ success: false, message: "Item not found" });
+  }
+  
+  // Update the item while preserving the original ID
+  items[itemIndex] = { ...updatedItem, id: itemId };
+  
+  writeDB(institutionId, items);
+  
+  console.log(`Successfully updated item ${itemId}`);
+  res.json({ success: true, item: items[itemIndex] });
+});
+
+// Update a specific Done item for an institution
+app.put('/institutions/:institutionId/completed/:itemId', (req, res) => {
+  const { itemId } = req.params;
+  const institutionId = req.params.institutionId;
+  const updatedItem = req.body;
+  
+  console.log(`Updating completed item ${itemId} for institution ${institutionId}`);
+  
+  let completed = readCompletedDB(institutionId);
+  const itemIndex = completed.findIndex(item => item.id === itemId);
+  
+  if (itemIndex === -1) {
+    return res.status(404).json({ success: false, message: "Completed item not found" });
+  }
+  
+  // Update the item while preserving the original ID
+  completed[itemIndex] = { ...updatedItem, id: itemId };
+  
+  writeCompletedDB(institutionId, completed);
+  
+  console.log(`Successfully updated completed item ${itemId}`);
+  res.json({ success: true, item: completed[itemIndex] });
+});
+
+app.get('/institutions/test', (req, res) => {
+  res.json({ ok: true, message: "Proxy route works!" });
+});
+
+// Reopen Done items for an institution (move back to To Do)
+app.post('/institutions/:institutionId/completed_maintenance_requests/reopen', (req, res) => {
+  const { ids } = req.body;
+  const institutionId = req.params.institutionId;
+  
+  console.log(`Reopening items ${ids} for institution ${institutionId}`); // Add debug log
+
+  let items = readDB(institutionId);
+  let completed = readCompletedDB(institutionId);
+
+  const toReopen = completed.filter(item => ids.includes(item.id));
+  completed = completed.filter(item => !ids.includes(item.id));
+
+  writeDB(institutionId, [...items, ...toReopen]);
+  writeCompletedDB(institutionId, completed);
+
+  console.log(`Successfully reopened ${toReopen.length} items`); // Add debug log
+
+  res.json({ success: true });
+});
+
+// Root
+app.get("/", (req, res) => {
+  res.send("Server is running!");
+});
+
+// Listen on HTTP port 3000 only on localhost
 app.listen(PORT, '127.0.0.1', () => {
   console.log(`HTTP Server running on http://127.0.0.1:${PORT}`);
 });
