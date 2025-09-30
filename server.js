@@ -73,16 +73,29 @@ app.get('/institutions/:institutionId/maintenance_requests', (req, res) => {
 
 // Add a To Do item for an institution
 app.post('/institutions/:institutionId/maintenance_requests', (req, res) => {
-  console.log('yo')
-  const file = getInstitutionFile(req.params.institutionId, 'maintenance_requests.json');
+  const institutionId = req.params.institutionId;
+  console.log('Adding maintenance request for institution:', institutionId);
+  
+  // Ensure directories exist
+  ensureInstitutionDirectories(institutionId);
+  
+  const file = getInstitutionFile(institutionId, 'maintenance_requests.json');
   let items = [];
-  if (fs.existsSync(file)) {
-    const data = fs.readFileSync(file, 'utf8');
-    items = data.trim() ? JSON.parse(data) : [];
+  
+  try {
+    if (fs.existsSync(file)) {
+      const data = fs.readFileSync(file, 'utf8');
+      items = data.trim() ? JSON.parse(data) : [];
+    }
+    
+    items.push(req.body);
+    fs.writeFileSync(file, JSON.stringify(items, null, 2));
+    console.log('Successfully added maintenance request');
+    res.status(201).json({ success: true, item: req.body });
+  } catch (error) {
+    console.error('Error adding maintenance request:', error);
+    res.status(500).json({ error: 'Failed to add maintenance request' });
   }
-  items.push(req.body);
-  fs.writeFileSync(file, JSON.stringify(items, null, 2));
-  res.status(201).json({ success: true });
 });
 
 // Get all Done items for an institution
@@ -367,3 +380,35 @@ app.get("/", (req, res) => {
 app.listen(PORT, '127.0.0.1', () => {
   console.log(`HTTP Server running on http://127.0.0.1:${PORT}`);
 });
+
+// Initialize directories
+function initializeDirectories() {
+  const dirs = [
+    path.join(__dirname, 'institutions'),
+    path.join(__dirname, 'uploads'),
+    path.join(__dirname, 'data')
+  ];
+
+  dirs.forEach(dir => {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+      console.log(`Created directory: ${dir}`);
+    }
+  });
+}
+
+// Call this when your server starts
+initializeDirectories();
+
+// Add this helper function for institution-specific directories
+function ensureInstitutionDirectories(institutionId) {
+  const institutionDir = path.join(__dirname, 'institutions', institutionId);
+  const uploadDir = path.join(__dirname, 'uploads', institutionId);
+  
+  [institutionDir, uploadDir].forEach(dir => {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+      console.log(`Created directory: ${dir}`);
+    }
+  });
+}
