@@ -3,13 +3,66 @@ const fs = require('fs');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
-const multer = require('multer'); // <-- Added multer import
+const multer = require('multer');
 const app = express();
 
 const PORT = 8081;
 
+// Track last update timestamps per institution
+const lastUpdateTimes = new Map();
+
+// Function to update the last update timestamp for an institution
+function updateLastUpdateTime(institutionId) {
+  const now = new Date().toISOString();
+  lastUpdateTimes.set(institutionId, now);
+  console.log(`Updated last update time for ${institutionId}: ${now}`);
+}
+
+// Function to get the last update timestamp for an institution
+function getLastUpdateTime(institutionId) {
+  return lastUpdateTimes.get(institutionId) || null;
+}
+
+// Initialize last update times on server start
+function initializeLastUpdateTimes() {
+  const dataDir = path.join(__dirname, 'institutions');
+  if (!fs.existsSync(dataDir)) return;
+  
+  const institutions = fs.readdirSync(dataDir).filter(f => 
+    fs.statSync(path.join(dataDir, f)).isDirectory()
+  );
+
+  institutions.forEach(institutionId => {
+    // Check modification times of data files to initialize last update
+    const files = [
+      'maintenance_requests.json',
+      'completed_maintenance_requests.json'
+    ];
+    
+    let latestTime = null;
+    
+    files.forEach(filename => {
+      const filePath = path.join(dataDir, institutionId, filename);
+      if (fs.existsSync(filePath)) {
+        const stats = fs.statSync(filePath);
+        if (!latestTime || stats.mtime > latestTime) {
+          latestTime = stats.mtime;
+        }
+      }
+    });
+    
+    if (latestTime) {
+      lastUpdateTimes.set(institutionId, latestTime.toISOString());
+      console.log(`Initialized last update time for ${institutionId}: ${latestTime.toISOString()}`);
+    }
+  });
+}
+
+// Call initialization on server start
+initializeLastUpdateTimes();
+
 app.use(cors({
-  origin: '*', // or list your app's origin explicitly
+  origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
@@ -20,7 +73,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Institution-aware helpers
+// Institution-aware helpers (updated to track changes)
 function readDB(institutionId) {
   console.log('request to see maintenance requests from' + institutionId);
   const file = getInstitutionFile(institutionId, 'maintenance_requests.json');
@@ -34,9 +87,11 @@ function readDB(institutionId) {
     return [];
   }
 }
+
 function writeDB(institutionId, data) {
   const file = getInstitutionFile(institutionId, 'maintenance_requests.json');
   fs.writeFileSync(file, JSON.stringify(data, null, 2));
+  updateLastUpdateTime(institutionId); // Track the update
 }
 
 function readCompletedDB(institutionId) {
@@ -51,15 +106,38 @@ function readCompletedDB(institutionId) {
     return [];
   }
 }
+
 function writeCompletedDB(institutionId, data) {
   const file = getInstitutionFile(institutionId, 'completed_maintenance_requests.json');
   fs.writeFileSync(file, JSON.stringify(data, null, 2));
+  updateLastUpdateTime(institutionId); // Track the update
 }
 
 // Helper to get file path for an institution
 function getInstitutionFile(institutionId, file) {
   return path.join(__dirname, 'institutions', institutionId, file);
 }
+
+// NEW ROUTE: Get last update time for an institution
+app.get('/institutions/:institutionId/last-update', (req, res) => {
+  const institutionId = req.params.institutionId;
+  const lastUpdate = getLastUpdateTime(institutionId);
+  
+  if (lastUpdate) {
+    res.json({ 
+      success: true, 
+      lastUpdate: lastUpdate,
+      timestamp: new Date(lastUpdate).getTime() // Also provide Unix timestamp
+    });
+  } else {
+    res.json({ 
+      success: true, 
+      lastUpdate: null,
+      timestamp: null,
+      message: 'No updates recorded for this institution'
+    });
+  }
+});
 
 // ===== ROUTES =====
 
@@ -74,6 +152,7 @@ app.get('/institutions/:institutionId/maintenance_requests', (req, res) => {
 
 // Add a To Do item for an institution
 app.post('/institutions/:institutionId/maintenance_requests', (req, res) => {
+  console.log('Adding new maintenance request')
   const file = getInstitutionFile(req.params.institutionId, 'maintenance_requests.json');
   let items = [];
   if (fs.existsSync(file)) {
@@ -82,6 +161,7 @@ app.post('/institutions/:institutionId/maintenance_requests', (req, res) => {
   }
   items.push(req.body);
   fs.writeFileSync(file, JSON.stringify(items, null, 2));
+  updateLastUpdateTime(req.params.institutionId); // Track the update
   res.status(201).json({ success: true });
 });
 
@@ -92,13 +172,6 @@ app.get('/institutions/:institutionId/completed_maintenance_requests', (req, res
   const data = fs.readFileSync(file, 'utf8');
   res.json(data.trim() ? JSON.parse(data) : []);
 });
-
-
-// Replace all To Do items
-// app.put('/maintenance_requests', (req, res) => {
-//   writeDB(req.body);
-//   res.status(200).json({ success: true });
-// });
 
 // Complete To Do items for an institution
 app.post('/institutions/:institutionId/complete', (req, res) => {
@@ -117,7 +190,7 @@ app.post('/institutions/:institutionId/complete', (req, res) => {
   res.json({ success: true });
 });
 
-
+// Update maintenance request
 app.post('/institutions/:institutionId/maintenance_requests/update', (req, res) => {
   const { id, updatedItem } = req.body;
   const institutionId = req.params.institutionId;
@@ -130,6 +203,54 @@ app.post('/institutions/:institutionId/maintenance_requests/update', (req, res) 
   } else {
     res.status(400).json({ success: false, message: "Invalid id" });
   }
+});
+
+// Update a specific To Do item for an institution
+app.put('/institutions/:institutionId/todo/:itemId', (req, res) => {
+  const { itemId } = req.params;
+  const institutionId = req.params.institutionId;
+  const updatedItem = req.body;
+  
+  console.log(`Updating item ${itemId} for institution ${institutionId}`);
+  
+  let items = readDB(institutionId);
+  const itemIndex = items.findIndex(item => item.id === itemId);
+  
+  if (itemIndex === -1) {
+    return res.status(404).json({ success: false, message: "Item not found" });
+  }
+  
+  // Update the item while preserving the original ID
+  items[itemIndex] = { ...updatedItem, id: itemId };
+  
+  writeDB(institutionId, items);
+  
+  console.log(`Successfully updated item ${itemId}`);
+  res.json({ success: true, item: items[itemIndex] });
+});
+
+// Update a specific Done item for an institution
+app.put('/institutions/:institutionId/completed/:itemId', (req, res) => {
+  const { itemId } = req.params;
+  const institutionId = req.params.institutionId;
+  const updatedItem = req.body;
+  
+  console.log(`Updating completed item ${itemId} for institution ${institutionId}`);
+  
+  let completed = readCompletedDB(institutionId);
+  const itemIndex = completed.findIndex(item => item.id === itemId);
+  
+  if (itemIndex === -1) {
+    return res.status(404).json({ success: false, message: "Completed item not found" });
+  }
+  
+  // Update the item while preserving the original ID
+  completed[itemIndex] = { ...updatedItem, id: itemId };
+  
+  writeCompletedDB(institutionId, completed);
+  
+  console.log(`Successfully updated completed item ${itemId}`);
+  res.json({ success: true, item: completed[itemIndex] });
 });
 
 // Delete To Do items for an institution
@@ -243,127 +364,7 @@ app.post('/institutions/:institutionId/cities/delete', (req, res) => {
   res.json({ success: true });
 });
 
-// Assign workers to To Do items for an institution
-app.post('/institutions/:institutionId/assign', (req, res) => {
-  const { ids, workers } = req.body;
-  const institutionId = req.params.institutionId;
-  
-  let items = readDB(institutionId);
-  
-  // Update each item's assignees
-  items = items.map(item => {
-    if (ids.includes(item.id)) {
-      return { 
-        ...item, 
-        assignees: Array.isArray(item.assignees) 
-          ? [...new Set([...item.assignees, ...workers])] // Merge and remove duplicates
-          : workers // If assignees doesn't exist, set to workers
-      };
-    }
-    return item;
-  });
-  
-  writeDB(institutionId, items);
-  res.json({ success: true });
-});
-
-// Delete Street from City for an institution
-app.post('/institutions/:institutionId/cities/deleteStreet', (req, res) => {
-  const { cityName, streetName } = req.body;
-  const institutionId = req.params.institutionId;
-  const file = getInstitutionFile(institutionId, 'cities.json');
-  let cities = [];
-  if (fs.existsSync(file)) {
-    cities = JSON.parse(fs.readFileSync(file, 'utf8'));
-  }
-  const updated = cities.map(c =>
-    c.name === cityName
-      ? { ...c, streets: c.streets.filter(s => s !== streetName) }
-      : c
-  );
-  fs.writeFileSync(file, JSON.stringify(updated, null, 2));
-  res.json({ success: true });
-});
-
-// Update a specific To Do item for an institution
-app.put('/institutions/:institutionId/todo/:itemId', (req, res) => {
-  const { itemId } = req.params;
-  const institutionId = req.params.institutionId;
-  const updatedItem = req.body;
-  
-  console.log(`Updating item ${itemId} for institution ${institutionId}`);
-  
-  let items = readDB(institutionId);
-  const itemIndex = items.findIndex(item => item.id === itemId);
-  
-  if (itemIndex === -1) {
-    return res.status(404).json({ success: false, message: "Item not found" });
-  }
-  
-  // Update the item while preserving the original ID
-  items[itemIndex] = { ...updatedItem, id: itemId };
-  
-  writeDB(institutionId, items);
-  
-  console.log(`Successfully updated item ${itemId}`);
-  res.json({ success: true, item: items[itemIndex] });
-});
-
-// Update a specific Done item for an institution
-app.put('/institutions/:institutionId/completed/:itemId', (req, res) => {
-  const { itemId } = req.params;
-  const institutionId = req.params.institutionId;
-  const updatedItem = req.body;
-  
-  console.log(`Updating completed item ${itemId} for institution ${institutionId}`);
-  
-  let completed = readCompletedDB(institutionId);
-  const itemIndex = completed.findIndex(item => item.id === itemId);
-  
-  if (itemIndex === -1) {
-    return res.status(404).json({ success: false, message: "Completed item not found" });
-  }
-  
-  // Update the item while preserving the original ID
-  completed[itemIndex] = { ...updatedItem, id: itemId };
-  
-  writeCompletedDB(institutionId, completed);
-  
-  console.log(`Successfully updated completed item ${itemId}`);
-  res.json({ success: true, item: completed[itemIndex] });
-});
-
-app.get('/institutions/test', (req, res) => {
-  res.json({ ok: true, message: "Proxy route works!" });
-});
-
-// Reopen Done items for an institution (move back to To Do)
-app.post('/institutions/:institutionId/completed_maintenance_requests/reopen', (req, res) => {
-  const { ids } = req.body;
-  const institutionId = req.params.institutionId;
-  
-  console.log(`Reopening items ${ids} for institution ${institutionId}`); // Add debug log
-
-  let items = readDB(institutionId);
-  let completed = readCompletedDB(institutionId);
-
-  const toReopen = completed.filter(item => ids.includes(item.id));
-  completed = completed.filter(item => !ids.includes(item.id));
-
-  writeDB(institutionId, [...items, ...toReopen]);
-  writeCompletedDB(institutionId, completed);
-
-  console.log(`Successfully reopened ${toReopen.length} items`); // Add debug log
-
-  res.json({ success: true });
-});
-
-// Root
-app.get("/", (req, res) => {
-  res.send("Server is running!");
-});
-
-// Listen on HTTP port 3000 only on localhost
+// Listen on HTTP port 8081 only on localhost
 app.listen(PORT, '127.0.0.1', () => {
   console.log(`HTTP Server running on http://127.0.0.1:${PORT}`);
 });
