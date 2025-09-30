@@ -438,24 +438,31 @@ app.get('/institutions/:institutionId/media/:filename', (req, res) => {
   }
 });
 
-// Add route for deleting media files
+// Update the delete route to be more robust
 app.delete('/institutions/:institutionId/media/:filename', (req, res) => {
   try {
     const { institutionId, filename } = req.params;
     const filePath = path.join(__dirname, 'institutions', institutionId, 'media', filename);
     
-    console.log(`Attempting to delete media file: ${filePath}`);
+    console.log(`Delete request for: ${filePath}`);
     
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
       console.log(`Successfully deleted media file: ${filename}`);
       res.json({ success: true, message: 'File deleted successfully' });
     } else {
-      console.log(`File not found: ${filename}`);
-      res.status(404).json({ error: 'File not found' });
+      console.log(`File not found (may already be deleted): ${filename}`);
+      // Return success even if file doesn't exist (idempotent operation)
+      res.json({ success: true, message: 'File not found (may already be deleted)' });
     }
   } catch (error) {
     console.error('Error deleting media file:', error);
-    res.status(500).json({ error: 'Failed to delete file' });
+    
+    // Check if it's a "file not found" error
+    if (error.code === 'ENOENT') {
+      res.json({ success: true, message: 'File not found (may already be deleted)' });
+    } else {
+      res.status(500).json({ error: 'Failed to delete file' });
+    }
   }
 });
