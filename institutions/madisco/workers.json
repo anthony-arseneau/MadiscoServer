@@ -2,6 +2,7 @@
     {
         "id": 0,
         "name": "Hervé",
+        "last_name": "Arseneau",
         "username": "herve",
         "password": "password123",
         "role": "administrator"
@@ -9,6 +10,7 @@
     {
         "id": 1,
         "name": "Marc",
+        "last_name": "Arseneau",
         "username": "marc",
         "password": "password123",
         "role": "manager"
@@ -16,6 +18,7 @@
     {
         "id": 2,
         "name": "Jolyn",
+        "last_name": "Arseneau",
         "username": "jolyn",
         "password": "password123",
         "role": "manager"
@@ -23,6 +26,7 @@
     {
         "id": 3,
         "name": "Éric",
+        "last_name": "Arseneau",
         "username": "eric",
         "password": "password123",
         "role": "manager"
@@ -30,6 +34,7 @@
     {
         "id": 4,
         "name": "Robinson",
+        "last_name": "",
         "username": "robinson",
         "password": "password123",
         "role": "worker"

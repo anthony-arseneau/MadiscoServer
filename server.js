@@ -3,21 +3,189 @@ const fs = require('fs');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
+const multer = require('multer');
+const { promisify } = require('util');
 const app = express();
 
 const PORT = 8081;
 
+// Promisify fs methods
+const fsMkdir = promisify(fs.mkdir);
+const fsReaddir = promisify(fs.readdir);
+const fsUnlink = promisify(fs.unlink);
+const fsStat = promisify(fs.stat);
+
+// Middleware
 app.use(cors({
   origin: '*', // or list your app's origin explicitly
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
-
 app.use(bodyParser.json());
+app.use(express.json());
 
-app.use((req, res, next) => {
-  next();
+// Serve static files (uploaded images)
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Configure multer for image uploads
+const storage = multer.diskStorage({
+  destination: async (req, file, cb) => {
+    const { institutionId } = req.body;
+    const uploadPath = path.join(__dirname, 'uploads', institutionId);
+    
+    // Create directory if it doesn't exist
+    try {
+      await fsMkdir(uploadPath, { recursive: true });
+    } catch (error) {
+      console.error('Error creating upload directory:', error);
+    }
+    
+    cb(null, uploadPath);
+  },
+  filename: (req, file, cb) => {
+    const { itemId } = req.body;
+    const timestamp = Date.now();
+    const ext = path.extname(file.originalname) || '.jpg';
+    cb(null, `${itemId}_${timestamp}${ext}`);
+  }
 });
+
+const upload = multer({ 
+  storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    // Accept images and videos
+    if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image and video files are allowed'));
+    }
+  }
+});
+
+// Image upload endpoint
+app.post('/upload-image', upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const { institutionId } = req.body;
+    const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${institutionId}/${req.file.filename}`;
+    
+    res.json({ imageUrl });
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    res.status(500).json({ error: 'Failed to upload image' });
+  }
+});
+
+// Image delete endpoint
+app.delete('/delete-image', async (req, res) => {
+  try {
+    const { institutionId, imageUrl } = req.body;
+    
+    // Extract filename from URL
+    const urlParts = imageUrl.split('/');
+    const filename = urlParts[urlParts.length - 1];
+    const filePath = path.join(__dirname, 'uploads', institutionId, filename);
+    
+    // Delete the file
+    try {
+      await fsUnlink(filePath);
+      console.log(`Deleted image: ${filePath}`);
+    } catch (error) {
+      console.log(`Image not found or already deleted: ${filePath}`);
+    }
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting image:', error);
+    res.status(500).json({ error: 'Failed to delete image' });
+  }
+});
+
+// Helper function to clean up orphaned images
+const cleanupOrphanedImages = async (institutionId) => {
+  try {
+    const uploadPath = path.join(__dirname, 'uploads', institutionId);
+    const dataPath = path.join(__dirname, 'data', institutionId);
+    
+    // Read all image files
+    let imageFiles = [];
+    try {
+      imageFiles = await fsReaddir(uploadPath);
+    } catch (error) {
+      return; // No upload directory exists
+    }
+    
+    // Read all todo and done items to find used images
+    const usedImages = new Set();
+    
+    try {
+      const todoData = await fs.readFile(path.join(dataPath, 'maintenance_requests.json'), 'utf8');
+      const todoItems = JSON.parse(todoData);
+      todoItems.forEach(item => {
+        if (item.mediaUris) {
+          item.mediaUris.forEach(url => {
+            const filename = url.split('/').pop();
+            if (filename) usedImages.add(filename);
+          });
+        }
+      });
+    } catch (error) {
+      // No todo file exists
+    }
+    
+    try {
+      const doneData = await fs.readFile(path.join(dataPath, 'maintenance_requests_done.json'), 'utf8');
+      const doneItems = JSON.parse(doneData);
+      doneItems.forEach(item => {
+        if (item.mediaUris) {
+          item.mediaUris.forEach(url => {
+            const filename = url.split('/').pop();
+            if (filename) usedImages.add(filename);
+          });
+        }
+      });
+    } catch (error) {
+      // No done file exists
+    }
+    
+    // Delete orphaned images
+    for (const imageFile of imageFiles) {
+      if (!usedImages.has(imageFile)) {
+        const filePath = path.join(uploadPath, imageFile);
+        try {
+          await fsUnlink(filePath);
+          console.log(`Cleaned up orphaned image: ${imageFile}`);
+        } catch (error) {
+          console.error(`Error deleting orphaned image ${imageFile}:`, error);
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error during image cleanup:', error);
+  }
+};
+
+// Run cleanup every hour
+setInterval(() => {
+  // Get all institution IDs and clean up their images
+  fs.readdir(path.join(__dirname, 'data'))
+    .then(institutions => {
+      institutions.forEach(institutionId => {
+        if (institutionId !== '.DS_Store') { // Skip system files
+          cleanupOrphanedImages(institutionId);
+        }
+      });
+    })
+    .catch(error => {
+      console.error('Error during scheduled cleanup:', error);
+    });
+}, 60 * 60 * 1000); // Every hour
 
 // Institution-aware helpers
 function readDB(institutionId) {
@@ -366,4 +534,26 @@ app.get("/", (req, res) => {
 // Listen on HTTP port 3000 only on localhost
 app.listen(PORT, '127.0.0.1', () => {
   console.log(`HTTP Server running on http://127.0.0.1:${PORT}`);
+});
+
+// Make sure to create uploads directory on startup
+const initializeUploadsDirectory = async () => {
+  try {
+    await fsMkdir(path.join(__dirname, 'uploads'), { recursive: true });
+    console.log('Uploads directory initialized');
+  } catch (error) {
+    console.error('Error creating uploads directory:', error);
+  }
+};
+
+// Start server
+const startServer = async () => {
+  await initializeUploadsDirectory();
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+};
+
+startServer().catch(error => {
+  console.error('Error starting server:', error);
 });
