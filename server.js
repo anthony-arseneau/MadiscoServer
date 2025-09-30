@@ -3,6 +3,7 @@ const fs = require('fs');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
+const multer = require('multer'); // <-- Added multer import
 const app = express();
 
 const PORT = 8081;
@@ -73,29 +74,16 @@ app.get('/institutions/:institutionId/maintenance_requests', (req, res) => {
 
 // Add a To Do item for an institution
 app.post('/institutions/:institutionId/maintenance_requests', (req, res) => {
-  const institutionId = req.params.institutionId;
-  console.log('Adding maintenance request for institution:', institutionId);
-  
-  // Ensure directories exist
-  ensureInstitutionDirectories(institutionId);
-  
-  const file = getInstitutionFile(institutionId, 'maintenance_requests.json');
+  console.log('yo')
+  const file = getInstitutionFile(req.params.institutionId, 'maintenance_requests.json');
   let items = [];
-  
-  try {
-    if (fs.existsSync(file)) {
-      const data = fs.readFileSync(file, 'utf8');
-      items = data.trim() ? JSON.parse(data) : [];
-    }
-    
-    items.push(req.body);
-    fs.writeFileSync(file, JSON.stringify(items, null, 2));
-    console.log('Successfully added maintenance request');
-    res.status(201).json({ success: true, item: req.body });
-  } catch (error) {
-    console.error('Error adding maintenance request:', error);
-    res.status(500).json({ error: 'Failed to add maintenance request' });
+  if (fs.existsSync(file)) {
+    const data = fs.readFileSync(file, 'utf8');
+    items = data.trim() ? JSON.parse(data) : [];
   }
+  items.push(req.body);
+  fs.writeFileSync(file, JSON.stringify(items, null, 2));
+  res.status(201).json({ success: true });
 });
 
 // Get all Done items for an institution
@@ -381,34 +369,88 @@ app.listen(PORT, '127.0.0.1', () => {
   console.log(`HTTP Server running on http://127.0.0.1:${PORT}`);
 });
 
-// Initialize directories
-function initializeDirectories() {
-  const dirs = [
-    path.join(__dirname, 'institutions'),
-    path.join(__dirname, 'uploads'),
-    path.join(__dirname, 'data')
-  ];
-
-  dirs.forEach(dir => {
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-      console.log(`Created directory: ${dir}`);
+// Create media directories and configure multer
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const institutionId = req.body.institutionId || req.params.institutionId;
+    const mediaDir = path.join(__dirname, 'institutions', institutionId, 'media');
+    
+    // Create directory if it doesn't exist
+    if (!fs.existsSync(mediaDir)) {
+      fs.mkdirSync(mediaDir, { recursive: true });
     }
-  });
-}
+    
+    cb(null, mediaDir);
+  },
+  filename: function (req, file, cb) {
+    const itemId = req.body.itemId || 'item';
+    const timestamp = Date.now();
+    const extension = path.extname(file.originalname);
+    cb(null, `${itemId}_${timestamp}${extension}`);
+  }
+});
 
-// Call this when your server starts
-initializeDirectories();
+const upload = multer({ 
+  storage: storage,
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB limit
+  }
+});
 
-// Add this helper function for institution-specific directories
-function ensureInstitutionDirectories(institutionId) {
-  const institutionDir = path.join(__dirname, 'institutions', institutionId);
-  const uploadDir = path.join(__dirname, 'uploads', institutionId);
+// Add this route EXACTLY as written
+app.post('/institutions/:institutionId/upload-media', upload.single('media'), (req, res) => {
+  try {
+    console.log('Upload request received for institution:', req.params.institutionId);
+    console.log('File:', req.file);
+    
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const institutionId = req.params.institutionId;
+    const filename = req.file.filename;
+    const mediaUrl = `https://api.anthonyarseneau.ca/institutions/${institutionId}/media/${filename}`;
+    
+    console.log(`Media uploaded successfully: ${filename}`);
+    
+    res.json({ 
+      success: true, 
+      mediaUrl: mediaUrl,
+      filename: filename
+    });
+  } catch (error) {
+    console.error('Upload error:', error);
+    res.status(500).json({ error: 'Upload failed' });
+  }
+});
+
+// Add route to serve the uploaded files
+app.get('/institutions/:institutionId/media/:filename', (req, res) => {
+  const { institutionId, filename } = req.params;
+  const filePath = path.join(__dirname, 'institutions', institutionId, 'media', filename);
   
-  [institutionDir, uploadDir].forEach(dir => {
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-      console.log(`Created directory: ${dir}`);
+  console.log('Serving file:', filePath);
+  
+  if (fs.existsSync(filePath)) {
+    res.sendFile(filePath);
+  } else {
+    res.status(404).json({ error: 'File not found' });
+  }
+});
+
+// Add route to delete media files
+app.delete('/institutions/:institutionId/media/:filename', (req, res) => {
+  const { institutionId, filename } = req.params;
+  const filePath = path.join(__dirname, 'institutions', institutionId, 'media', filename);
+  
+  try {
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+      console.log(`Deleted media file: ${filename}`);
     }
-  });
-}
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Delete error:', error);
+    res.status(500).json({ error: 'Delete failed' });
+  }
+});
